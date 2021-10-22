@@ -36,7 +36,7 @@
 <body>
     <div id="board-wrapper">
         <div id="board">
-            <div class="piece player-1"></div>
+            <div class="piece player-1" draggable="true"></div>
             <div class="space row-1 col-2"></div>
             <div class="space row-1 col-4"></div>
             <div class="space row-1 col-6"></div>
@@ -71,5 +71,88 @@
             <div class="space row-8 col-7"></div>
         </div>
     </div>
+    <script>
+        // Turn Switching should switch with checkers are draggable.
+        const hasClass = (className) => (el) => Array.from(el.classList).includes(className);
+        const isSpace = hasClass('space');
+        const isRow2 = hasClass('row-2');
+        /*
+        function dragstart_handler(ev) {
+            // Add the target element's id to the data transfer object
+            ev.dataTransfer.setData("text/plain", ev.target.id);
+        }
+
+        function dragover_handler(ev) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+        }
+
+        function drop_handler(ev) {
+            ev.preventDefault();
+            // Get the id of the target and add the moved element to the target's DOM
+            const data = ev.dataTransfer.getData("text/plain");
+            ev.target.appendChild(document.getElementById(data));
+        }
+        */
+
+        var piece = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const board = document.getElementById('board');
+            const spaces = board.getElementsByClassName('space');
+            // Get the element by id
+            // const element = document.getElementById("p1");
+            // Add the ondragstart event listener
+            // element.addEventListener("dragstart", dragstart_handler);
+
+            board.addEventListener('dragstart', (e) => {
+                console.log('dragstart', e)
+                e.dataTransfer.effectAllowed = "move";
+                piece = e.target;
+            });
+
+            board.addEventListener('dragend', (e) => {
+                console.log('dragend', e)
+                // if (isSpace(e.target)) return false
+            })
+
+            board.addEventListener('dragover', (e) => {
+                e.preventDefault()
+                console.log('dragover', e)
+                // if (isSpace(e.target)) return false
+            })
+
+            board.addEventListener("dragenter", (e) => {
+                console.log('dragenter', e)
+                // highlight potential drop target when the draggable element enters it
+                // if (isSpace(event.target)) {
+                //     console.log('dragenter', e)
+                //     event.target.style.background = "purple";
+                // }
+            });
+  
+            board.addEventListener("dragleave", (e) => {
+                console.log('dragleave', e);
+                // reset background of potential drop target when the draggable element leaves it
+                // if (isSpace(event.target)) {
+                    // event.target.style.background = "";
+                // }
+            });
+
+            board.addEventListener('drop', (e) => {
+                e.preventDefault();
+                console.log('drop', e);
+                if (isSpace(e.target) && !isRow2(e.target)) {
+                    // event.target.style.background = "";
+                    piece.parentNode.removeChild( piece );
+                    event.target.appendChild( piece );
+                    piece = null;
+                    return true
+                } 
+
+                return false;
+            });
+        });
+    </script>
 </body>
 </html>
