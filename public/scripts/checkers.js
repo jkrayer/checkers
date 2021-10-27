@@ -1,4 +1,4 @@
-import { prop, path, pathEq } from "./lib.js";
+import { prop, path, pathEq, compose, eq, abs } from "./lib.js";
 
 // Constants
 const KING_ROW = {
@@ -13,14 +13,15 @@ const TURNS = {
 
 //
 const getTurn = prop("turn");
+const absOne = compose(eq(1), abs);
 
 // Validation
 // A valid move is validPlayer + validSpace + validDirection
 const VALID_MOVES = {
-  P1: (fromY, toY) => toY > fromY,
-  P2: (fromY, toY) => toY < fromY,
-  K1: (fromY, toY) => toY !== fromY,
-  K2: (fromY, toY) => toY !== fromY,
+  P1: (fromY, toY) => toY - fromY === 1,
+  P2: (fromY, toY) => fromY - toY === 1,
+  K1: (fromY, toY) => absOne(fromY - toY),
+  K2: (fromY, toY) => absOne(fromY - toY),
 };
 
 //
@@ -56,11 +57,16 @@ const makeMove =
   ([fromX, fromY]) =>
   ([toX, toY]) =>
   (state) => {
-    const nextState = { ...state };
-    nextState.board[toY][toX] = nextState.board[fromY][fromX];
-    nextState.board[fromY][fromX] = "E";
-    nextState.error("");
-    return nextState;
+    const board = [...state.board];
+    board[toY][toX] = board[fromY][fromX];
+    board[fromY][fromX] = "E";
+
+    return {
+      ...state,
+      board,
+      error: "",
+      turn: state.turn === "P1" ? "P2" : "P1",
+    };
   };
 
 const badMove = (state) => ({
@@ -69,7 +75,7 @@ const badMove = (state) => ({
 });
 
 const move = (state, from, to) =>
-  validMove(from)(to)(state) ? makeMove(from, to, state) : badMove(state);
+  validMove(from)(to)(state) ? makeMove(from)(to)(state) : badMove(state);
 
 // GameState
 const initialState = () => ({

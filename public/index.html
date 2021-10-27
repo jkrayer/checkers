@@ -319,5 +319,16 @@
     </script>
     <script type="module" src="/scripts/lib.js"></script>
     <script type="module" src="/scripts/checkers.js"></script>
+    <script type="module">
+      import { initialState, move } from "/scripts/checkers.js";
+
+      let state = initialState();
+
+      state = move(state, [1, 2], [0, 3]);
+      state = move(state, [0, 5], [1, 4]); // Should be bad move because it's p2 turn
+      state = move(state, [0, 3], [1, 4]);
+
+      console.log(state);
+    </script>
   </body>
 </html>

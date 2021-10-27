@@ -6,4 +6,10 @@ const path = (pth) => (object) =>
 // The value at path is
 const pathEq = (value) => (pth) => (object) => path(pth)(object) === value;
 
-export { prop, path, pathEq };
+const abs = (x) => Math.abs(x);
+
+const eq = (x) => (y) => x === y;
+
+const compose = (f) => (g) => (x) => f(g(x));
+
+export { prop, path, pathEq, abs, eq, compose };
