@@ -1,4 +1,17 @@
-import { prop, path, pathEq, compose, eq, abs } from "./lib.js";
+import {
+  abs,
+  compose,
+  eq,
+  halve,
+  isNil,
+  map,
+  path,
+  pathEq,
+  prop,
+  sumPairs,
+  Left,
+  Right,
+} from "./lib.js";
 
 // Constants
 const KING_ROW = {
@@ -6,14 +19,11 @@ const KING_ROW = {
   P2: 0,
 };
 
-const TURNS = {
-  P1: "P2",
-  P2: "P1",
-};
-
 //
 const getTurn = prop("turn");
+const getSate = prop("state");
 const absOne = compose(eq(1), abs);
+const middleSpace = compose(map(halve), sumPairs);
 
 // Validation
 // A valid move is validPlayer + validSpace + validDirection
@@ -25,57 +35,88 @@ const VALID_MOVES = {
 };
 
 //
-const validPlayer =
-  ([fromX, fromY]) =>
-  (state) =>
-    pathEq(getTurn(state))(["board", fromY, fromX])(state);
+const validPlayer = ({ from, to, state }) => {
+  const [fromx, fromy] = from;
+  return pathEq(getTurn(state))(["board", fromy, fromx])(state)
+    ? Right({ from, to, state })
+    : Left({ ...state, error: `You may not move another player's piece.` });
+};
 
 //
-const validSpace =
-  ([toX, toY]) =>
-  (state) =>
-    pathEq("E")(["board", toY, toX])(state);
+const validSpace = ({ from, to, state }) => {
+  const [tox, toy] = to;
+  return pathEq("E")(["board", toy, tox])(state)
+    ? Right({ from, to, state })
+    : Left({ ...state, error: `A piece can only be moved to an empty space.` });
+};
 
-//
-// const getPiece =
-const validDirection =
-  ([fromX, fromY]) =>
-  ([, toY]) =>
-  (state) => {
-    const piece = path(["board", fromY, fromX])(state);
-    return VALID_MOVES[piece](fromY, toY);
-  };
+const validDirection = ({ from, to, state }) => {
+  const [fromx, fromy] = from;
+  const [, toy] = to;
+  const piece = path(["board", fromy, fromx])(state);
+  return VALID_MOVES[piece](fromy, toy)
+    ? Right({ from, to, state })
+    : Left({
+        ...state,
+        error: `Player attempted to move in an invalid direction`,
+      });
+};
 
-const validMove = (from) => (to) => (state) =>
-  validPlayer(from)(state) &&
-  validSpace(to)(state) &&
-  validDirection(from)(to)(state);
+const makeMove = ({ from, to, state }) => {
+  if (isNil(from) || isNil(to)) {
+    return state;
+  }
 
-//  Initial Game State
+  const [fromx, fromy] = from;
+  const [tox, toy] = to;
+  const board = [...state.board];
+  board[toy][tox] = board[fromy][fromx];
+  board[fromy][fromx] = "E";
 
-const makeMove =
-  ([fromX, fromY]) =>
-  ([toX, toY]) =>
-  (state) => {
-    const board = [...state.board];
-    board[toY][toX] = board[fromY][fromX];
-    board[fromY][fromX] = "E";
-
-    return {
+  return {
+    from,
+    to,
+    state: {
       ...state,
       board,
-      error: "",
-      turn: state.turn === "P1" ? "P2" : "P1",
-    };
+    },
   };
+};
 
-const badMove = (state) => ({
-  ...state,
-  error: `Player ${getTurn(state)} attempted an invalid move`,
+const makeCapture = (x) => x;
+
+const clearError = ({ from, to, state }) => ({
+  from,
+  to,
+  state: { ...state, error: "" },
 });
 
+const nextTurn = ({ from, to, state }) => {
+  const TURNS = {
+    P1: "P2",
+    P2: "P1",
+  };
+
+  return {
+    from,
+    to,
+    state: {
+      ...state,
+      turn: TURNS[state.turn],
+    },
+  };
+};
+
 const move = (state, from, to) =>
-  validMove(from)(to)(state) ? makeMove(from)(to)(state) : badMove(state);
+  validPlayer({ from, to, state })
+    .chain(validSpace)
+    .chain(validDirection)
+    .map(makeMove)
+    .map(makeCapture)
+    .map(clearError)
+    .map(nextTurn)
+    .map(getSate)
+    .get();
 
 // GameState
 const initialState = () => ({
