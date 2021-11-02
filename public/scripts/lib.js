@@ -11,7 +11,7 @@ const isNil = (x) => x === null || x === undefined;
 const map = (fn) => (arr) => arr.map(fn);
 
 const path = (pth) => (object) =>
-  pth.reduce((acc, key) => (acc === undefined ? undefined : acc[key]), object);
+  pth.reduce((acc, key) => (isNil(acc) ? undefined : acc[key]), object);
 
 // The value at path is
 const pathEq = (value) => (pth) => (object) => path(pth)(object) === value;

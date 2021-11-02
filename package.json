@@ -1,0 +1,28 @@
+{
+  "name": "checkers",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkrayer/checkers.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jkrayer/checkers/issues"
+  },
+  "homepage": "https://github.com/jkrayer/checkers#readme",
+  "devDependencies": {
+    "jest": "^27.3.1"
+  },
+  "jest": {
+    "verbose": true,
+    "transform": {}
+  }
+}
