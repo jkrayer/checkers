@@ -35,10 +35,12 @@ test("move only allows movement to an empty space", () => {
   expect(state.error).toBe("A piece can only be moved to an empty space.");
 });
 
-test("move does not moves longer than one space", () => {
+test("move does not allow non-capturing moves longer than one space", () => {
   let state = move(initialState(), [1, 2], [3, 4]);
 
-  expect(state.error).toBe("Player attempted to move in an invalid direction");
+  expect(state.error).toBe(
+    "Player attempted a move in an invalid direction or distace"
+  );
 });
 
 test("move does not allow backward movement", () => {
@@ -66,7 +68,9 @@ test("move does not allow backward movement", () => {
     [1, 2]
   );
 
-  expect(state.error).toBe("Player attempted to move in an invalid direction");
+  expect(state.error).toBe(
+    "Player attempted a move in an invalid direction or distace"
+  );
 });
 
 test("move returns a new board when a valid move is requested", () => {
@@ -93,4 +97,43 @@ test("move a valid move clears errors", () => {
   state = move(state, [1, 2], [0, 3]);
 
   expect(state.error).toBe("");
+});
+
+test("move can make a single capture", () => {
+  let state = {
+    ...initialState(),
+    board: [
+      ["X", "P1", "X", "P1", "X", "P1", "X", "P1"],
+      ["P1", "X", "P1", "X", "P1", "X", "P1", "X"],
+      ["X", "E", "X", "E", "X", "P1", "X", "P1"],
+      ["P1", "X", "P1", "X", "E", "X", "E", "X"],
+      ["X", "P2", "X", "E", "X", "E", "X", "E"],
+      ["E", "X", "P2", "X", "P2", "X", "P2", "X"],
+      ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
+      ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
+    ],
+    turn: "P2",
+  };
+
+  state = move(state, [1, 4], [3, 2]);
+
+  expect(state).toMatchObject({
+    board: [
+      ["X", "P1", "X", "P1", "X", "P1", "X", "P1"],
+      ["P1", "X", "P1", "X", "P1", "X", "P1", "X"],
+      ["X", "E", "X", "P2", "X", "P1", "X", "P1"],
+      ["P1", "X", "E", "X", "E", "X", "E", "X"],
+      ["X", "E", "X", "E", "X", "E", "X", "E"],
+      ["E", "X", "P2", "X", "P2", "X", "P2", "X"],
+      ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
+      ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
+    ],
+    turn: "P1",
+    pieces: {
+      P1: 11,
+      P2: 12,
+    },
+    error: "",
+    gameOver: "",
+  });
 });

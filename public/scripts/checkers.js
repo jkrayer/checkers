@@ -19,19 +19,45 @@ const KING_ROW = {
   P2: 0,
 };
 
+const TURNS = {
+  P1: "P2",
+  P2: "P1",
+};
+
 //
 const getTurn = prop("turn");
 const getSate = prop("state");
-const absOne = compose(eq(1), abs);
-const middleSpace = compose(map(halve), sumPairs);
+const middleSpace = compose(map(halve))(sumPairs);
 
-// Validation
-// A valid move is validPlayer + validSpace + validDirection
-const VALID_MOVES = {
-  P1: (fromY, toY) => toY - fromY === 1,
-  P2: (fromY, toY) => fromY - toY === 1,
-  K1: (fromY, toY) => absOne(fromY - toY),
-  K2: (fromY, toY) => absOne(fromY - toY),
+const getDistance = (from, to, piece) => {
+  const calc = {
+    P1: ([, fy], [, ty]) => ty - fy,
+    P2: ([, fy], [, ty]) => fy - ty,
+    K1: ([, fy], [, ty]) => abs(fy - ty),
+    K2: ([, fy], [, ty]) => abs(fy - ty),
+  };
+
+  return calc[piece](from, to);
+};
+
+const getMoveType = (piece, from, to, state) => {
+  const [fx, fy] = from;
+  // const [, ty] = to;
+  const { board } = state;
+  const distance = getDistance(from, to, piece);
+
+  if (distance === 1) {
+    return [];
+  }
+
+  if (distance === 2) {
+    const [mx, my] = middleSpace(from, to);
+    if (board[my][mx] === TURNS[piece]) {
+      return [[mx, my]];
+    }
+  }
+
+  return false;
 };
 
 //
@@ -50,16 +76,17 @@ const validSpace = ({ from, to, state }) => {
     : Left({ ...state, error: `A piece can only be moved to an empty space.` });
 };
 
-const validDirection = ({ from, to, state }) => {
-  const [fromx, fromy] = from;
-  const [, toy] = to;
-  const piece = path(["board", fromy, fromx])(state);
-  return VALID_MOVES[piece](fromy, toy)
-    ? Right({ from, to, state })
-    : Left({
+const validMove = ({ from, to, state }) => {
+  const [fx, fy] = from;
+  const piece = state.board[fy][fx];
+  const captures = getMoveType(piece, from, to, state);
+
+  return captures === false
+    ? Left({
         ...state,
-        error: `Player attempted to move in an invalid direction`,
-      });
+        error: `Player attempted a move in an invalid direction or distace`,
+      })
+    : Right({ from, to, state: { ...state, captures } });
 };
 
 const makeMove = ({ from, to, state }) => {
@@ -67,23 +94,31 @@ const makeMove = ({ from, to, state }) => {
     return state;
   }
 
+  const { captures, turn } = state;
+  const nextState = { ...state };
+  const nextBoard = [...state.board];
+
+  // Move
   const [fromx, fromy] = from;
   const [tox, toy] = to;
-  const board = [...state.board];
-  board[toy][tox] = board[fromy][fromx];
-  board[fromy][fromx] = "E";
+  nextBoard[toy][tox] = nextBoard[fromy][fromx];
+  nextBoard[fromy][fromx] = "E";
+
+  nextState.pieces[TURNS[turn]] -= captures.length;
+  captures.forEach(([cx, cy]) => {
+    nextBoard[cy][cx] = "E";
+  });
 
   return {
     from,
     to,
     state: {
-      ...state,
-      board,
+      ...nextState,
+      board: nextBoard,
+      captures: [],
     },
   };
 };
-
-const makeCapture = (x) => x;
 
 const clearError = ({ from, to, state }) => ({
   from,
@@ -92,11 +127,6 @@ const clearError = ({ from, to, state }) => ({
 });
 
 const nextTurn = ({ from, to, state }) => {
-  const TURNS = {
-    P1: "P2",
-    P2: "P1",
-  };
-
   return {
     from,
     to,
@@ -110,9 +140,8 @@ const nextTurn = ({ from, to, state }) => {
 const move = (state, from, to) =>
   validPlayer({ from, to, state })
     .chain(validSpace)
-    .chain(validDirection)
+    .chain(validMove)
     .map(makeMove)
-    .map(makeCapture)
     .map(clearError)
     .map(nextTurn)
     .map(getSate)
@@ -137,6 +166,7 @@ const initialState = () => ({
   },
   error: "",
   gameOver: "",
+  captures: [],
 });
 
 export { initialState, move };

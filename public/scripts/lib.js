@@ -1,6 +1,10 @@
 const abs = (x) => Math.abs(x);
 
-const compose = (f) => (g) => (x) => f(g(x));
+const compose =
+  (f) =>
+  (g) =>
+  (...xs) =>
+    f(g(...xs));
 
 const eq = (x) => (y) => x === y;
 
