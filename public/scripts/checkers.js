@@ -116,6 +116,7 @@ const makeMove = ({ from, to, state }) => {
       ...nextState,
       board: nextBoard,
       captures: [],
+      gameOver: nextState.pieces[TURNS[turn]] === 0 ? "Game Over Man" : "",
     },
   };
 };
