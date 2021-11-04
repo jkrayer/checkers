@@ -1,13 +1,15 @@
+// https://www.ultraboardgames.com/checkers/game-rules.php
+// needs a must capture
 import {
   abs,
   compose,
-  eq,
   halve,
   isNil,
   map,
-  path,
   pathEq,
   prop,
+  reverse,
+  reverseA2,
   sumPairs,
   Left,
   Right,
@@ -28,6 +30,14 @@ const TURNS = {
 const getTurn = prop("turn");
 const getSate = prop("state");
 const middleSpace = compose(map(halve))(sumPairs);
+const nw = ([x, y]) => [x - 1, y - 1];
+const ne = ([x, y]) => [x + 1, y - 1];
+const sw = ([x, y]) => [x - 1, y + 1];
+const se = ([x, y]) => [x + 1, y + 1];
+const inBounds = (coord) =>
+  coord.reduce((acc, val) => acc && val > -1 && val < 8, true);
+
+const isEmptySpace = reverseA2(pathEq("E"));
 
 const getDistance = (from, to, piece) => {
   const calc = {
@@ -127,13 +137,45 @@ const clearError = ({ from, to, state }) => ({
   state: { ...state, error: "" },
 });
 
+//
+const checkCaptureDirection = (start, board, fns) => {
+  const [sx, sy] = start;
+  const isOtherPlayer = reverseA2(pathEq(TURNS[board[sy][sx]]))(board);
+  const isEmpty = isEmptySpace(board);
+
+  for (let i = 0; i < fns.length; i++) {
+    const nextSpace = fns[i];
+    let next = nextSpace(start);
+    if (inBounds(next) && isOtherPlayer(reverse(next))) {
+      next = nextSpace(next);
+      if (inBounds(next) && isEmpty(reverse(next))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
+const canCapture = ([tx, ty], state) => {
+  const piece = state.board[ty][tx];
+  const checks = {
+    P1: [sw, se],
+    P2: [ne, nw],
+    K1: [nw, ne, se, sw],
+    K2: [nw, ne, se, sw],
+  };
+
+  return checkCaptureDirection([tx, ty], state.board, checks[piece]);
+};
+
 const nextTurn = ({ from, to, state }) => {
   return {
     from,
     to,
     state: {
       ...state,
-      turn: TURNS[state.turn],
+      turn: canCapture(to, state) ? state.turn : TURNS[state.turn],
     },
   };
 };

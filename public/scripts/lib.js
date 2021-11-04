@@ -22,6 +22,10 @@ const pathEq = (value) => (pth) => (object) => path(pth)(object) === value;
 
 const prop = (key) => (object) => object[key];
 
+const reverse = ([x, y]) => [y, x];
+
+const reverseA2 = (fn) => (a) => (b) => fn(b)(a);
+
 const sumPairs = (...pairs) =>
   pairs.slice(1).reduce(([x, y], [a, b]) => [x + a, b + y], pairs[0]);
 
@@ -55,88 +59,9 @@ export {
   path,
   pathEq,
   prop,
+  reverse,
+  reverseA2,
   sumPairs,
   Left,
   Right,
 };
-/*
-// EITHER
-const move = (s, f, t) => {
-  validPlayer({ s, f, t }); //left or right
-  map();
-};
-
-ValidPlayer = validPlayer(s, f, t);
-// lef or right of errormsg, or {s,f,t}
-ValidDir = ValidPlayer.chain(validSpace);
-// lef or right of errormsg, or {s,f,t}
-ValidSpce = ValidDir.chain(validSpace);
-// lef or right of errormsg, or {s,f,t}
-
-// class Left {
-//   constructor(val) {
-//     this._val = val;
-//   }
-//   map() {
-//     return this;
-//   }
-//   join() {
-//     return this;
-//   }
-//   chain() {
-//     return this;
-//   }
-//   get() {
-//     return this._val;
-//   }
-//   toString() {
-//     return `Left(${this._val.toString()})`;
-//   }
-// }
-
-// class Right {
-//   constructor(val) {
-//     this._val = val;
-//   }
-
-//   map(fn) {
-//     return new Right(fn(this._val));
-//   }
-
-//   join() {
-//     if (this._val instanceof Left || this._val instanceof Right) {
-//       return this._val;
-//     }
-//     return this;
-//   }
-
-//   chain(fn) {
-//     return fn(this._val);
-//   }
-
-//   get() {
-//     return this._val;
-//   }
-
-//   toString() {
-//     return `Right(${this._val.toString()})`;
-//   }
-// }
-
-function validPlayer({ from, to, state }) {
-  return state.board[fromy][fromx] === state.turn
-    ? new Right({ from, to, state })
-    : new Left({ ...state, error: "Player attempted to move invalid token" });
-}
-
-function validSpace({ from, to, state }) {
-  return state.board[toy][tox] === "E"
-    ? // update board
-      Right({ from, to, state })
-    : Left({ ...state, error: "Player attempted to move to an invalid space" });
-}
-
-function makeMove(from, to, state) {
-  return validPlayer({ from, to, state }).chain(validSpace);
-}
-*/
