@@ -20,6 +20,13 @@ const path = (pth) => (object) =>
 // The value at path is
 const pathEq = (value) => (pth) => (object) => path(pth)(object) === value;
 
+const pathsEq = (pone) => (ptwo) => (obj) => {
+  const vone = path(pone)(obj);
+  const vtwo = path(ptwo)(obj);
+
+  return vone !== undefined && vtwo !== undefined && vone === vtwo;
+};
+
 const prop = (key) => (object) => object[key];
 
 const reverse = ([x, y]) => [y, x];
@@ -58,6 +65,7 @@ export {
   map,
   path,
   pathEq,
+  pathsEq,
   prop,
   reverse,
   reverseA2,
