@@ -20,6 +20,8 @@ import {
 // Constants
 const PLAYER_ONE = "P1";
 const PLAYER_TWO = "P2";
+const KING_ONE = "K1";
+const KING_TWO = "K2";
 const EMPTY_SPACE = "E";
 const INVALID_SPACE = "X";
 const SOUTH_WEST = "sw";
@@ -27,9 +29,9 @@ const SOUTH_EAST = "se";
 const NORTH_WEST = "nw";
 const NORTH_EAST = "ne";
 
-const KING_ROW = {
-  [PLAYER_ONE]: 7,
-  [PLAYER_TWO]: 0,
+const KING_METHOD = {
+  0: (piece) => (piece === PLAYER_TWO ? KING_TWO : piece),
+  7: (piece) => (piece === PLAYER_ONE ? KING_ONE : piece),
 };
 
 const TURNS = {
@@ -59,6 +61,9 @@ const getDirection = ([fx, fy], [tx, ty]) => {
 };
 
 //
+const canKing = (row) => row === 7 || row === 0;
+
+//
 const isTurnPiece = (coord, state) =>
   pathsEq(["turn"])(["board", ...reverse(coord)])(state);
 
@@ -71,8 +76,8 @@ const isValidMoveDirection = (from, to, state) => {
   const VALID_MOVES = {
     [PLAYER_ONE]: [SOUTH_WEST, SOUTH_EAST],
     [PLAYER_TWO]: [NORTH_WEST, NORTH_EAST],
-    K1: [SOUTH_WEST, SOUTH_EAST, NORTH_WEST, NORTH_EAST],
-    K2: [SOUTH_WEST, SOUTH_EAST, NORTH_WEST, NORTH_EAST],
+    [KING_ONE]: [SOUTH_WEST, SOUTH_EAST, NORTH_WEST, NORTH_EAST],
+    [KING_TWO]: [SOUTH_WEST, SOUTH_EAST, NORTH_WEST, NORTH_EAST],
   };
 
   const piece = getPiece(from, state);
@@ -132,10 +137,7 @@ const setGameOver = (state) =>
     : state;
 
 //
-const setNextTurn = (state) =>
-  pathEq(undefined)(["gameOver"])(state)
-    ? { ...state, turn: getOpposingPlayer(state) }
-    : state;
+const setNextTurn = (state) => ({ ...state, turn: getOpposingPlayer(state) });
 
 //
 const inBounds = (coord) =>
@@ -170,13 +172,24 @@ const ne = ([x, y]) => [x + 1, y - 1];
 const canCapture = (to, state) => {
   const piece = getPiece(to, state);
   const checks = {
-    P1: [sw, se],
-    P2: [ne, nw],
-    K1: [nw, ne, se, sw],
-    K2: [nw, ne, se, sw],
+    [PLAYER_ONE]: [sw, se],
+    [PLAYER_TWO]: [ne, nw],
+    [KING_ONE]: [nw, ne, se, sw],
+    [KING_TWO]: [nw, ne, se, sw],
   };
 
   return checkCaptureDirection(to, state, checks[piece]);
+};
+
+const kingMe = (state, rowIndex) => {
+  const kingMethod = KING_METHOD[rowIndex];
+
+  return {
+    ...state,
+    board: state.board.map((row, index) =>
+      index === rowIndex ? row.map(kingMethod) : [...row]
+    ),
+  };
 };
 
 //
@@ -204,16 +217,20 @@ const makeMove = ({ from, to, state }) => {
   }
 
   nextState = setGameOver(nextState);
-  nextState =
-    canCapture(to, state) === false ? setNextTurn(nextState) : nextState;
-  // KingMe?
+
+  if (pathEq(undefined)(["gameOver"])(nextState)) {
+    if (canKing(toy)) {
+      nextState = setNextTurn(kingMe(state, toy));
+    } else if (canCapture(to, state) === false) {
+      nextState = setNextTurn(state);
+    }
+  }
 
   return {
     from,
     to,
     state: {
       ...nextState,
-      board: nextBoard,
       captures: [],
       error: "",
     },

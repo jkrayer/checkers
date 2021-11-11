@@ -211,9 +211,29 @@ test("the turn does not change when a capture can be made", () => {
     board: [
       ["X", "E", "X", "E", "X", "E", "X", "E"],
       ["E", "X", "P1", "X", "P1", "X", "E", "X"],
+      ["X", "P1", "X", "E", "X", "E", "X", "E"],
+      ["E", "X", "E", "X", "E", "X", "E", "X"],
+      ["X", "P1", "X", "E", "X", "E", "X", "E"],
+      ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
+      ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
+      ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
+    ],
+    turn: "P2",
+    pieces: {
+      P1: 4,
+      P2: 12,
+    },
+  };
+
+  state = move(state, [0, 5], [2, 3]);
+
+  expect(state).toMatchObject({
+    board: [
       ["X", "E", "X", "E", "X", "E", "X", "E"],
-      ["E", "X", "P1", "X", "E", "X", "E", "X"],
-      ["X", "P2", "X", "E", "X", "E", "X", "E"],
+      ["E", "X", "P1", "X", "P1", "X", "E", "X"],
+      ["X", "P1", "X", "E", "X", "E", "X", "E"],
+      ["E", "X", "P2", "X", "E", "X", "E", "X"],
+      ["X", "E", "X", "E", "X", "E", "X", "E"],
       ["E", "X", "P2", "X", "P2", "X", "P2", "X"],
       ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
       ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
@@ -223,35 +243,15 @@ test("the turn does not change when a capture can be made", () => {
       P1: 3,
       P2: 12,
     },
-  };
-
-  state = move(state, [1, 4], [3, 2]);
-
-  expect(state).toMatchObject({
-    board: [
-      ["X", "E", "X", "E", "X", "E", "X", "E"],
-      ["E", "X", "P1", "X", "P1", "X", "E", "X"],
-      ["X", "E", "X", "P2", "X", "E", "X", "E"],
-      ["E", "X", "E", "X", "E", "X", "E", "X"],
-      ["X", "E", "X", "E", "X", "E", "X", "E"],
-      ["E", "X", "P2", "X", "P2", "X", "P2", "X"],
-      ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
-      ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
-    ],
-    turn: "P2",
-    pieces: {
-      P1: 2,
-      P2: 12,
-    },
     error: "",
   });
 
-  state = move(state, [3, 2], [1, 0]);
+  state = move(state, [2, 3], [0, 1]);
 
   expect(state).toMatchObject({
     board: [
-      ["X", "P2", "X", "E", "X", "E", "X", "E"],
-      ["E", "X", "E", "X", "P1", "X", "E", "X"],
+      ["X", "E", "X", "E", "X", "E", "X", "E"],
+      ["P2", "X", "P1", "X", "P1", "X", "E", "X"],
       ["X", "E", "X", "E", "X", "E", "X", "E"],
       ["E", "X", "E", "X", "E", "X", "E", "X"],
       ["X", "E", "X", "E", "X", "E", "X", "E"],
@@ -261,9 +261,94 @@ test("the turn does not change when a capture can be made", () => {
     ],
     turn: "P1",
     pieces: {
-      P1: 1,
+      P1: 2,
       P2: 12,
     },
     error: "",
+  });
+});
+
+describe("king me", () => {
+  it("kings a piece moved into the far row", () => {
+    let state = {
+      ...initialState(),
+      board: [
+        ["X", "E", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "P1", "X", "P1", "X", "E", "X"],
+        ["X", "P2", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "P1", "X", "E", "X", "E", "X"],
+        ["X", "P2", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "P2", "X", "E", "X", "P2", "X"],
+        ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
+        ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
+      ],
+      turn: "P2",
+      pieces: {
+        P1: 3,
+        P2: 12,
+      },
+    };
+
+    state = move(state, [1, 2], [3, 0]);
+
+    expect(state).toMatchObject({
+      board: [
+        ["X", "E", "X", "K2", "X", "E", "X", "E"],
+        ["E", "X", "E", "X", "P1", "X", "E", "X"],
+        ["X", "E", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "P1", "X", "E", "X", "E", "X"],
+        ["X", "P2", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "P2", "X", "E", "X", "P2", "X"],
+        ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
+        ["P2", "X", "P2", "X", "P2", "X", "P2", "X"],
+      ],
+      turn: "P1",
+      pieces: {
+        P1: 2,
+        P2: 12,
+      },
+      error: "",
+    });
+  });
+
+  it("kings a piece and advances to the next turn", () => {
+    let state = {
+      ...initialState(),
+      board: [
+        ["X", "P1", "X", "P1", "X", "P1", "X", "P1"],
+        ["E", "X", "E", "X", "E", "X", "E", "X"],
+        ["X", "E", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "E", "X", "E", "X", "E", "X"],
+        ["X", "P2", "X", "E", "X", "E", "X", "E"],
+        ["P1", "X", "P2", "X", "E", "X", "P2", "X"],
+        ["X", "P2", "X", "P2", "X", "P2", "X", "P2"],
+        ["P2", "X", "E", "X", "P2", "X", "P2", "X"],
+      ],
+      pieces: {
+        P1: 5,
+        P2: 10,
+      },
+    };
+
+    state = move(state, [0, 5], [2, 7]);
+
+    expect(state).toMatchObject({
+      board: [
+        ["X", "P1", "X", "P1", "X", "P1", "X", "P1"],
+        ["E", "X", "E", "X", "E", "X", "E", "X"],
+        ["X", "E", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "E", "X", "E", "X", "E", "X"],
+        ["X", "P2", "X", "E", "X", "E", "X", "E"],
+        ["E", "X", "P2", "X", "E", "X", "P2", "X"],
+        ["X", "E", "X", "P2", "X", "P2", "X", "P2"],
+        ["P2", "X", "K1", "X", "P2", "X", "P2", "X"],
+      ],
+      turn: "P2",
+      pieces: {
+        P1: 5,
+        P2: 9,
+      },
+      error: "",
+    });
   });
 });
