@@ -10,7 +10,11 @@ const eq = (x) => (y) => x === y;
 
 const halve = (x) => x / 2;
 
+const head = (xs) => xs[0]; //.slice(0, 1);
+
 const isNil = (x) => x === null || x === undefined;
+
+const last = (xs) => xs[xs.length - 1]; // xs.slice(xs.length - 1);
 
 const map = (fn) => (arr) => arr.map(fn);
 
@@ -28,6 +32,9 @@ const pathsEq = (pone) => (ptwo) => (obj) => {
 };
 
 const prop = (key) => (object) => object[key];
+
+const propOr = (def) => (key) => (object) =>
+  isNil(object[key]) ? def : object[key];
 
 const reverse = ([x, y]) => [y, x];
 
@@ -57,19 +64,22 @@ const Right = (x) => ({
 });
 
 export {
-  abs,
-  compose,
-  eq,
-  halve,
-  isNil,
-  map,
+  abs, //
+  compose, //
+  eq, //
+  halve, //
+  head,
+  isNil, //
+  last,
+  map, //
   path,
   pathEq,
   pathsEq,
   prop,
+  propOr,
   reverse,
   reverseA2,
-  sumPairs,
+  sumPairs, //
   Left,
   Right,
 };

@@ -1,21 +1,20 @@
-// https://www.ultraboardgames.com/checkers/game-rules.php
-// needs a must capture
 import {
-  abs,
   compose,
   halve,
-  isNil,
+  head,
+  last,
   map,
+  path,
   pathEq,
   pathsEq,
   prop,
+  propOr,
   reverse,
   reverseA2,
   sumPairs,
   Left,
   Right,
-  path,
-} from "./lib.js";
+} from "./lib";
 
 // Constants
 const PLAYER_ONE = "P1";
@@ -29,27 +28,8 @@ const SOUTH_EAST = "se";
 const NORTH_WEST = "nw";
 const NORTH_EAST = "ne";
 
-const KING_METHOD = {
-  0: (piece) => (piece === PLAYER_TWO ? KING_TWO : piece),
-  7: (piece) => (piece === PLAYER_ONE ? KING_ONE : piece),
-};
-
-const TURNS = {
-  [PLAYER_ONE]: PLAYER_TWO,
-  [PLAYER_TWO]: PLAYER_ONE,
-};
-
-//
-const getBoard = prop("board");
-const getSate = prop("state");
-const getCurrentPlayer = prop("turn");
-const getPlayer = reverseA2(prop)(TURNS);
-const getOpposingPlayer = compose(getPlayer)(getCurrentPlayer);
-const middleSpace = compose(map(halve))(sumPairs);
-const zeroPieces = (player, state) => pathEq(0)(["pieces", player])(state);
-const getPiece = (coords, state) => path(["board", ...reverse(coords)])(state);
-const getDistance = ([, fy], [, ty]) => abs(fy - ty);
-const getDirection = ([fx, fy], [tx, ty]) => {
+// getDirection:: Coordinates -> Coordinates -> String
+const getDirection = (() => {
   const DIRECTIONS = {
     "-11": NORTH_EAST,
     11: NORTH_WEST,
@@ -57,21 +37,107 @@ const getDirection = ([fx, fy], [tx, ty]) => {
     "-1-1": SOUTH_EAST,
   };
 
-  return DIRECTIONS[[fx - tx, fy - ty].map(Math.sign).join("")] || null;
-};
+  return ([fx, fy], [tx, ty]) =>
+    DIRECTIONS[[fx - tx, fy - ty].map(Math.sign).join("")] || null;
+})();
 
-//
-const canKing = (row) => row === 7 || row === 0;
+// getNextPlayer:: String -> String
+const getNextPlayer = reverseA2(prop)({
+  [PLAYER_ONE]: PLAYER_TWO,
+  [PLAYER_TWO]: PLAYER_ONE,
+});
 
-//
-const isTurnPiece = (coord, state) =>
-  pathsEq(["turn"])(["board", ...reverse(coord)])(state);
+// getDirectionMethods:: String -> [Function]
+const getDirectionMethods = (() => {
+  const sw = ([x, y]) => [x - 1, y + 1];
+  const se = ([x, y]) => [x + 1, y + 1];
+  const nw = ([x, y]) => [x - 1, y - 1];
+  const ne = ([x, y]) => [x + 1, y - 1];
 
-//
+  const PIECE_DIRECTIONS = {
+    [PLAYER_ONE]: [sw, se],
+    [PLAYER_TWO]: [ne, nw],
+    [KING_ONE]: [nw, ne, se, sw],
+    [KING_TWO]: [nw, ne, se, sw],
+  };
+  // Composition
+  return (player) => PIECE_DIRECTIONS[player] || [];
+})();
+
+// getCurrentPlayer:: State -> String
+const getCurrentPlayer = prop("turn");
+
+// getOpposingPieces:: State -> [Pieces]
+const getOpposingPieces = compose(
+  reverseA2(propOr([]))({
+    [PLAYER_ONE]: [PLAYER_TWO, KING_TWO],
+    [PLAYER_TWO]: [PLAYER_ONE, KING_ONE],
+  })
+)(getCurrentPlayer);
+
+// getPlayerPieces:: State -> [Pieces]
+const getPlayerPieces = compose(
+  reverseA2(propOr([]))({
+    [PLAYER_ONE]: [PLAYER_ONE, KING_ONE],
+    [PLAYER_TWO]: [PLAYER_TWO, KING_TWO],
+  })
+)(getCurrentPlayer);
+
+// Helpers
+// getState:: Object -> State
+const getState = prop("state");
+
+// getBoard:: State -> Board
+const getBoard = prop("board");
+
+// getOpposingPlayer:: State => String : P1 | P2
+const getOpposingPlayer = compose(getNextPlayer)(getCurrentPlayer);
+
+// getPiece:: Coordinates -> State -> String : X | E | P1 | P2 | K1 | K2
+const getPiece = (coords, state) => path(["board", ...reverse(coords)])(state);
+
+// getPieceMethods:: Coordinates -> State -> [Function]
+const getPieceMethods = compose(getDirectionMethods)(getPiece);
+
+// getMiddleSpace:: Coordinates -> Coordinates -> Coordinates
+const getMiddleSpace = compose(map(halve))(sumPairs);
+
+// inBounds:: Coordinates -> Boolean
+const inBounds = (coord) =>
+  coord.reduce((acc, val) => acc && val > -1 && val < 8, true);
+
+// kingP1:: Board => Row
+const kingP1 = compose(
+  map((piece) => (piece === PLAYER_ONE ? KING_ONE : piece))
+)(last);
+
+// kingP2:: Board => Row
+const kingP2 = compose(
+  map((piece) => (piece === PLAYER_TWO ? KING_TWO : piece))
+)(head);
+
+// Lefts ----------
+// invalidMove:: State -> Left(State)
+const invalidMove = (state) =>
+  Left({
+    ...state,
+    error: `Player attempted an invalid move`,
+  });
+
+// Predicates ----------
+// isEmptySpace:: Coordinates -> State -> boolean
 const isEmptySpace = (coord, state) =>
   pathEq(EMPTY_SPACE)(["board", ...reverse(coord)])(state);
 
-//
+// isOpponentDone:: State -> Boolean
+const isOpponentDone = (state) =>
+  pathEq(0)(["pieces", ...getOpposingPlayer(state)])(state);
+
+// isTurnPiece:: Coordinates -> State -> Boolean
+const isTurnPiece = (coord, state) =>
+  getPlayerPieces(state).includes(getPiece(coord, state));
+
+// isValidMoveDirection:: Coordinates -> Coordinates -> State -> Boolean
 const isValidMoveDirection = (from, to, state) => {
   const VALID_MOVES = {
     [PLAYER_ONE]: [SOUTH_WEST, SOUTH_EAST],
@@ -86,71 +152,19 @@ const isValidMoveDirection = (from, to, state) => {
   return VALID_MOVES[piece].includes(direction);
 };
 
-// isValidDistance 1 || 2 with an enemy piece in the middle
-const isValidDistance = (from, to, state) => {
-  const absoluteDistance = getDistance(from, to);
-
-  if (absoluteDistance === 1) return true;
-  if (absoluteDistance === 2) {
-    if (getOpposingPlayer(state) === getPiece(middleSpace(from, to), state)) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-// when the Current Turn and Piece being moved match
-const validPlayer = ({ from, to, state }) =>
-  isTurnPiece(from, state)
-    ? Right({ from, to, state })
-    : Left({ ...state, error: `You may not move another player's piece.` });
-
-// when the space being moved to is E
-const validSpace = ({ from, to, state }) =>
-  isEmptySpace(to, state)
-    ? Right({ from, to, state })
-    : Left({ ...state, error: `A piece can only be moved to an empty space.` });
+// isOpposingPiece: Coordinates -> State -> Boolean
+const isOpposingPiece = (coord, state) =>
+  getOpposingPieces(state).includes(getPiece(coord, state));
 
 //
-const validDirection = ({ from, to, state }) =>
-  isValidMoveDirection(from, to, state)
-    ? Right({ from, to, state })
-    : Left({
-        ...state,
-        error: `Player attempted a move piece in an invalid direction`,
-      });
-
-//
-const validDistance = ({ from, to, state }) =>
-  isValidDistance(from, to, state)
-    ? Right({ from, to, state })
-    : Left({
-        ...state,
-        error: "Player attempted to move the piece an invalid distance",
-      });
-
-//
-const setGameOver = (state) =>
-  zeroPieces(getOpposingPlayer(state), state)
-    ? { ...state, gameOver: "Game Over Man" }
-    : state;
-
-//
-const setNextTurn = (state) => ({ ...state, turn: getOpposingPlayer(state) });
-
-//
-const inBounds = (coord) =>
-  coord.reduce((acc, val) => acc && val > -1 && val < 8, true);
-
-//
-const checkCaptureDirection = (start, state, fns) => {
+const canCapture = (to, state) => {
   const opposingPlayer = getOpposingPlayer(state);
   const isOtherPlayer = reverseA2(pathEq(opposingPlayer))(getBoard(state));
+  const fns = getPieceMethods(to, state);
 
   for (let i = 0; i < fns.length; i++) {
     const nextSpace = fns[i];
-    let next = nextSpace(start);
+    let next = nextSpace(to);
     if (inBounds(next) && isOtherPlayer(reverse(next))) {
       next = nextSpace(next);
       if (inBounds(next) && isEmptySpace(next, state)) {
@@ -162,92 +176,111 @@ const checkCaptureDirection = (start, state, fns) => {
   return false;
 };
 
-//
-const sw = ([x, y]) => [x - 1, y + 1];
-const se = ([x, y]) => [x + 1, y + 1];
-const nw = ([x, y]) => [x - 1, y - 1];
-const ne = ([x, y]) => [x + 1, y - 1];
+// Left/Right Operations ----------
+const validPlayer = ({ from, to, state }) =>
+  isTurnPiece(from, state)
+    ? Right({ from, to, state })
+    : Left({ ...state, error: `You may not move another player's piece.` });
+
+const validDirection = ({ from, to, state }) =>
+  isValidMoveDirection(from, to, state)
+    ? Right({ from, to, state })
+    : Left({
+        ...state,
+        error: `Player attempted a move piece in an invalid direction`,
+      });
 
 //
-const canCapture = (to, state) => {
-  const piece = getPiece(to, state);
-  const checks = {
-    [PLAYER_ONE]: [sw, se],
-    [PLAYER_TWO]: [ne, nw],
-    [KING_ONE]: [nw, ne, se, sw],
-    [KING_TWO]: [nw, ne, se, sw],
-  };
+const validMove = ({ from, to, state }) => {
+  const targetEmpty = isEmptySpace(to, state);
+  const distance = Math.abs(from[1] - to[1]);
+  const isCapture =
+    distance === 2 && isOpposingPiece(getMiddleSpace(from, to), state);
 
-  return checkCaptureDirection(to, state, checks[piece]);
+  return targetEmpty && (distance === 1 || isCapture)
+    ? Right({ from, to, state, distance })
+    : invalidMove(state);
 };
 
-const kingMe = (state, rowIndex) => {
-  const kingMethod = KING_METHOD[rowIndex];
+// This is making me think it's time to learn lenses.
+const movePiece = ({ from, to, state }) => {
+  const board = [...getBoard(state)];
 
-  return {
-    ...state,
-    board: state.board.map((row, index) =>
-      index === rowIndex ? row.map(kingMethod) : [...row]
-    ),
-  };
-};
-
-//
-const makeMove = ({ from, to, state }) => {
-  if (isNil(from) || isNil(to)) {
-    return state;
-  }
-
-  // const { captures, turn } = state;
-  let nextState = { ...state };
-  const nextBoard = [...state.board];
-
-  // Move
   const [fromx, fromy] = from;
   const [tox, toy] = to;
-  nextBoard[toy][tox] = nextBoard[fromy][fromx];
-  nextBoard[fromy][fromx] = EMPTY_SPACE;
 
-  // dislike the duplication
-  if (getDistance(from, to) === 2) {
-    const [mx, my] = middleSpace(from, to);
-    const opposingPlayer = getOpposingPlayer(state);
-    nextBoard[my][mx] = EMPTY_SPACE;
-    nextState.pieces[opposingPlayer]--;
-  }
+  board[toy][tox] = board[fromy][fromx];
+  board[fromy][fromx] = EMPTY_SPACE;
 
-  nextState = setGameOver(nextState);
+  return Right({ from, to, state: { ...state, board } });
+};
 
-  if (pathEq(undefined)(["gameOver"])(nextState)) {
-    if (canKing(toy)) {
-      nextState = setNextTurn(kingMe(state, toy));
-    } else if (canCapture(to, state) === false) {
-      nextState = setNextTurn(state);
-    }
-  }
+// This is making me think it's time to learn lenses.
+const captureMove = ({ from, to, state }) => {
+  const opponent = getOpposingPlayer(state);
+  const mid = getMiddleSpace(from, to);
+
+  const board = [...getBoard(state)];
+  board[mid[1]][mid[0]] = EMPTY_SPACE;
+  const pieces = { ...state.pieces };
+  pieces[opponent]--;
+
+  return Right({ from, to, state: { ...state, board, pieces } });
+};
+
+//
+const moreCaptures = ({ from, to, state }) =>
+  canCapture(to, state) ? Left(state) : Right({ from, to, state });
+
+//
+const isWinner = ({ from, to, state }) =>
+  isOpponentDone(state)
+    ? Left({ ...state, winner: `${getCurrentPlayer(state)} wins!` })
+    : Right({ from, to, state });
+
+// Map Operations ----------
+// nextTurn:: State -> State
+const nextTurn = ({ state }) => ({
+  state: { ...state, turn: getOpposingPlayer(state) },
+});
+
+// clearError:: State -> State
+const clearError = ({ state }) => ({ state: { ...state, error: "" } });
+
+// kingMe:: State -> State
+const kingMe = ({ state }) => {
+  const board = getBoard(state);
 
   return {
-    from,
-    to,
     state: {
-      ...nextState,
-      captures: [],
-      error: "",
+      ...state,
+      board: [kingP2(board), ...board.slice(1, 7), kingP1(board)],
     },
   };
 };
 
+// No more distance
+const moveAndCapture = ({ from, to, state, distance }) =>
+  distance === 1
+    ? movePiece({ from, to, state }).map(kingMe).map(nextTurn).map(clearError)
+    : captureMove({ from, to, state })
+        .chain(movePiece)
+        .chain(moreCaptures)
+        .chain(isWinner)
+        .map(kingMe)
+        .map(nextTurn)
+        .map(clearError);
+
 //
 const move = (state, from, to) =>
   validPlayer({ from, to, state })
-    .chain(validSpace)
     .chain(validDirection)
-    .chain(validDistance)
-    .map(makeMove)
-    .map(getSate)
+    .chain(validMove)
+    .chain(moveAndCapture)
+    .map(getState)
     .get();
 
-// GameState
+// STATE
 const initialState = () => ({
   board: [
     [
@@ -337,7 +370,6 @@ const initialState = () => ({
     [PLAYER_TWO]: 12,
   },
   error: "",
-  captures: [],
 });
 
 export { initialState, move };
