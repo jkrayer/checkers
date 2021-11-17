@@ -10,11 +10,11 @@ const eq = (x) => (y) => x === y;
 
 const halve = (x) => x / 2;
 
-const head = (xs) => xs[0]; //.slice(0, 1);
+const head = (xs) => xs[0];
 
 const isNil = (x) => x === null || x === undefined;
 
-const last = (xs) => xs[xs.length - 1]; // xs.slice(xs.length - 1);
+const last = (xs) => xs[xs.length - 1];
 
 const map = (fn) => (arr) => arr.map(fn);
 
@@ -64,14 +64,14 @@ const Right = (x) => ({
 });
 
 export {
-  abs, //
-  compose, //
-  eq, //
-  halve, //
+  abs,
+  compose,
+  eq,
+  halve,
   head,
-  isNil, //
+  isNil,
   last,
-  map, //
+  map,
   path,
   pathEq,
   pathsEq,
@@ -79,7 +79,7 @@ export {
   propOr,
   reverse,
   reverseA2,
-  sumPairs, //
+  sumPairs,
   Left,
   Right,
 };
