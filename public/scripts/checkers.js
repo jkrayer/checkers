@@ -14,7 +14,7 @@ import {
   sumPairs,
   Left,
   Right,
-} from "./lib";
+} from "./lib.js";
 
 // Constants
 const PLAYER_ONE = "P1";

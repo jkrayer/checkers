@@ -94,10 +94,10 @@
         border-radius: 50%;
         box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
       }
-      .player-1 {
+      .P1 {
         background-color: #111;
       }
-      .player-2 {
+      .P2 {
         background-color: bisque;
       }
     </style>
@@ -105,38 +105,38 @@
   <body>
     <div id="board-wrapper">
       <div id="board">
-        <div class="space row-1 col-2"></div>
-        <div class="space row-1 col-4"></div>
-        <div class="space row-1 col-6"></div>
-        <div class="space row-1 col-8"></div>
-        <div class="space row-2 col-1"></div>
-        <div class="space row-2 col-3"></div>
-        <div class="space row-2 col-5"></div>
-        <div class="space row-2 col-7"></div>
-        <div class="space row-3 col-2"></div>
-        <div class="space row-3 col-4"></div>
-        <div class="space row-3 col-6"></div>
-        <div class="space row-3 col-8"></div>
-        <div class="space row-4 col-1"></div>
-        <div class="space row-4 col-3"></div>
-        <div class="space row-4 col-5"></div>
-        <div class="space row-4 col-7"></div>
-        <div class="space row-5 col-2"></div>
-        <div class="space row-5 col-4"></div>
-        <div class="space row-5 col-6"></div>
-        <div class="space row-5 col-8"></div>
-        <div class="space row-6 col-1"></div>
-        <div class="space row-6 col-3"></div>
-        <div class="space row-6 col-5"></div>
-        <div class="space row-6 col-7"></div>
-        <div class="space row-7 col-2"></div>
-        <div class="space row-7 col-4"></div>
-        <div class="space row-7 col-6"></div>
-        <div class="space row-7 col-8"></div>
-        <div class="space row-8 col-1"></div>
-        <div class="space row-8 col-3"></div>
-        <div class="space row-8 col-5"></div>
-        <div class="space row-8 col-7"></div>
+        <div id="10" class="space row-1 col-2" data-to="1,0"></div>
+        <div id="30" class="space row-1 col-4" data-to="3,0"></div>
+        <div id="50" class="space row-1 col-6" data-to="5,0"></div>
+        <div id="70" class="space row-1 col-8" data-to="7,0"></div>
+        <div id="01" class="space row-2 col-1" data-to="0,1"></div>
+        <div id="21" class="space row-2 col-3" data-to="2,1"></div>
+        <div id="41" class="space row-2 col-5" data-to="4,1"></div>
+        <div id="61" class="space row-2 col-7" data-to="6,1"></div>
+        <div id="12" class="space row-3 col-2" data-to="1,2"></div>
+        <div id="32" class="space row-3 col-4" data-to="3,2"></div>
+        <div id="52" class="space row-3 col-6" data-to="5,2"></div>
+        <div id="72" class="space row-3 col-8" data-to="7,2"></div>
+        <div id="03" class="space row-4 col-1" data-to="0,3"></div>
+        <div id="23" class="space row-4 col-3" data-to="2,3"></div>
+        <div id="43" class="space row-4 col-5" data-to="4,3"></div>
+        <div id="63" class="space row-4 col-7" data-to="6,3"></div>
+        <div id="14" class="space row-5 col-2" data-to="1,4"></div>
+        <div id="34" class="space row-5 col-4" data-to="3,4"></div>
+        <div id="54" class="space row-5 col-6" data-to="5,4"></div>
+        <div id="74" class="space row-5 col-8" data-to="7,4"></div>
+        <div id="05" class="space row-6 col-1" data-to="0,5"></div>
+        <div id="25" class="space row-6 col-3" data-to="2,5"></div>
+        <div id="45" class="space row-6 col-5" data-to="4,5"></div>
+        <div id="65" class="space row-6 col-7" data-to="6,5"></div>
+        <div id="16" class="space row-7 col-2" data-to="1,6"></div>
+        <div id="36" class="space row-7 col-4" data-to="3,6"></div>
+        <div id="56" class="space row-7 col-6" data-to="5,6"></div>
+        <div id="76" class="space row-7 col-8" data-to="7,6"></div>
+        <div id="07" class="space row-8 col-1" data-to="0,7"></div>
+        <div id="27" class="space row-8 col-3" data-to="2,7"></div>
+        <div id="47" class="space row-8 col-5" data-to="4,7"></div>
+        <div id="67" class="space row-8 col-7" data-to="6,7"></div>
       </div>
     </div>
     <script>
@@ -165,6 +165,7 @@
         */
 
       var piece = null;
+      var dragging = false;
 
       window.addEventListener("DOMContentLoaded", () => {
         const board = document.getElementById("board");
@@ -174,161 +175,258 @@
         // Add the ondragstart event listener
         // element.addEventListener("dragstart", dragstart_handler);
 
-        board.addEventListener("dragstart", (e) => {
-          console.log("dragstart", e);
-          e.dataTransfer.effectAllowed = "move";
-          piece = e.target;
-        });
+        // board.addEventListener("dragstart", (e) => {
+        //   console.log("dragstart", e);
+        //   e.dataTransfer.effectAllowed = "move";
+        //   piece = e.target;
+        //   dragging = true;
+        // });
 
-        board.addEventListener("dragend", (e) => {
-          console.log("dragend", e);
-          // if (isSpace(e.target)) return false
-        });
+        // board.addEventListener("dragend", (e) => {
+        //   console.log("dragend", e);
+        //   // if (isSpace(e.target)) return false
+        // });
 
-        board.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          console.log("dragover", e);
-          // if (isSpace(e.target)) return false
-        });
+        // board.addEventListener("dragover", (e) => {
+        //   e.preventDefault();
+        //   console.log("dragover", e);
+        //   // if (isSpace(e.target)) return false
+        // });
 
-        board.addEventListener("dragenter", (e) => {
-          console.log("dragenter", e);
-          // highlight potential drop target when the draggable element enters it
-          // if (isSpace(event.target)) {
-          //     console.log('dragenter', e)
-          //     event.target.style.background = "purple";
-          // }
-        });
+        // board.addEventListener("dragenter", (e) => {
+        //   console.log("dragenter", e);
+        //   // highlight potential drop target when the draggable element enters it
+        //   // if (isSpace(event.target)) {
+        //   //     console.log('dragenter', e)
+        //   //     event.target.style.background = "purple";
+        //   // }
+        // });
 
-        board.addEventListener("dragleave", (e) => {
-          console.log("dragleave", e);
-          // reset background of potential drop target when the draggable element leaves it
-          // if (isSpace(event.target)) {
-          // event.target.style.background = "";
-          // }
-        });
+        // board.addEventListener("dragleave", (e) => {
+        //   console.log("dragleave", e);
+        //   // reset background of potential drop target when the draggable element leaves it
+        //   // if (isSpace(event.target)) {
+        //   // event.target.style.background = "";
+        //   // }
+        // });
 
-        board.addEventListener("drop", (e) => {
-          e.preventDefault();
-          console.log("drop", e);
-          if (isSpace(e.target) && !isRow2(e.target)) {
-            // event.target.style.background = "";
-            piece.parentNode.removeChild(piece);
-            event.target.appendChild(piece);
-            piece = null;
-            return true;
-          }
+        //   board.addEventListener("drop", (e) => {
+        //     e.preventDefault();
+        //     dragging = false;
+        //     console.log("drop", e);
+        //     if (isSpace(e.target) && !isRow2(e.target)) {
+        //       // event.target.style.background = "";
+        //       piece.parentNode.removeChild(piece);
+        //       event.target.appendChild(piece);
+        //       piece = null;
+        //       return true;
+        //     }
 
-          return false;
-        });
+        //     return false;
+        //   });
       });
 
-      const PlayerOne = {
-        pieces: [
-          [1, 0],
-          [3, 0],
-          [5, 0],
-          [7, 0],
-          [0, 1],
-          [2, 1],
-          [4, 1],
-          [6, 1],
-          [1, 2],
-          [3, 2],
-          [5, 2],
-          [7, 2],
-        ],
-        // may want this to be a map so you can do
-        // piece x: [x,y]
-      };
+      // const PlayerOne = {
+      //   pieces: [
+      //     [1, 0],
+      //     [3, 0],
+      //     [5, 0],
+      //     [7, 0],
+      //     [0, 1],
+      //     [2, 1],
+      //     [4, 1],
+      //     [6, 1],
+      //     [1, 2],
+      //     [3, 2],
+      //     [5, 2],
+      //     [7, 2],
+      //   ],
+      //   // may want this to be a map so you can do
+      //   // piece x: [x,y]
+      // };
 
-      const BOARD = {
-        pieces: [
-          {
-            coord: [1, 0],
-            owner: "player-1",
-          },
-          {
-            coord: [3, 0],
-            owner: "player-1",
-          },
-          {
-            coord: [5, 0],
-            owner: "player-1",
-          },
-          {
-            coord: [7, 0],
-            owner: "player-1",
-          },
-          {
-            coord: [0, 1],
-            owner: "player-1",
-          },
-          {
-            coord: [2, 1],
-            owner: "player-1",
-          },
-          {
-            coord: [4, 1],
-            owner: "player-1",
-          },
-          {
-            coord: [6, 1],
-            owner: "player-1",
-          },
-          {
-            coord: [1, 2],
-            owner: "player-1",
-          },
-          {
-            coord: [3, 2],
-            owner: "player-1",
-          },
-          {
-            coord: [5, 2],
-            owner: "player-1",
-          },
-          {
-            coord: [7, 2],
-            owner: "player-1",
-          },
-        ],
-      };
+      // const BOARD = {
+      //   pieces: [
+      //     {
+      //       coord: [1, 0],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [3, 0],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [5, 0],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [7, 0],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [0, 1],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [2, 1],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [4, 1],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [6, 1],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [1, 2],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [3, 2],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [5, 2],
+      //       owner: "player-1",
+      //     },
+      //     {
+      //       coord: [7, 2],
+      //       owner: "player-1",
+      //     },
+      //   ],
+      // };
 
       function getPosition(x, y) {
         const pos = (n) => n * 8 + 0.5;
-        return `left:${pos(x)}vw; top:${pos(y)}vw;`;
+        return `left:${pos(x)}vh; top:${pos(y)}vh;`;
       }
 
-      function renderBoard(brd) {
-        brd.pieces.forEach(({ coord, owner }) => {
-          const d = document.createElement("DIV");
-          d.setAttribute("class", `piece ${owner}`);
-          d.setAttribute("draggable", "true");
-          d.setAttribute("style", getPosition(...coord));
+      // function renderBoard(brd) {
+      //   brd.pieces.forEach(({ coord, owner }) => {
+      //     const d = document.createElement("DIV");
+      //     d.setAttribute("class", `piece ${owner}`);
+      //     d.setAttribute("draggable", "true");
+      //     d.setAttribute("style", getPosition(...coord));
 
-          board.appendChild(d);
-        });
-      }
+      //     board.appendChild(d);
+      //   });
+      // }
 
-      function gameSetup() {
-        renderBoard(BOARD);
-      }
+      // function gameSetup() {
+      //   renderBoard(BOARD);
+      // }
 
-      window.addEventListener("DOMContentLoaded", gameSetup);
+      // window.addEventListener("DOMContentLoaded", gameSetup);
     </script>
     <script type="module" src="/scripts/lib.js"></script>
     <script type="module" src="/scripts/checkers.js"></script>
     <script type="module">
-      import { initialState, move } from "/scripts/checkers.js";
+      import { move, initialState } from "/scripts/checkers.js";
 
-      let state = initialState();
+      const sixtyFPS = 1000 / 30; // 60
+      let STATE = initialState();
+      const dataToCoords = (str) => str.split(",").map((x) => parseInt(x, 10));
 
-      state = move(state, [1, 2], [0, 3]);
-      // state = move(state, [0, 5], [1, 4]);
-      // state = move(state, [0, 3], [1, 2]); // Should be bad move because it's p2 turn
+      const renderPiece = (p, x, y) => {
+        // `<div draggable class="piece ${p}"></div>`
+        const d = document.createElement("DIV");
+        d.setAttribute("class", `piece ${p}`);
+        d.setAttribute("draggable", "true");
+        d.setAttribute("style", getPosition(x, y));
+        d.dataset.from = [x, y];
+        return d;
+      };
 
-      console.log(state);
+      // State -> Board
+      function renderBoard({ board: sboard }) {
+        Array.from(board.getElementsByClassName("piece")).forEach((element) => {
+          element.remove();
+        });
+        sboard.forEach((row, y) => {
+          row.forEach((cell, x) => {
+            !["X", "E"].includes(cell)
+              ? board.appendChild(renderPiece(cell, x, y))
+              : false;
+          });
+        });
+      }
+
+      const step = (t1) => (t2) => {
+        if (!dragging && t2 - t1 > sixtyFPS) {
+          console.log("60fps");
+          // state = next(state);
+          renderBoard(STATE);
+          window.requestAnimationFrame(step(t2));
+        } else {
+          window.requestAnimationFrame(step(t1));
+        }
+      };
+
+      renderBoard(STATE);
+      // window.requestAnimationFrame(step(0));
+
+      board.addEventListener("dragstart", (e) => {
+        console.log("dragstart", e);
+        e.dataTransfer.effectAllowed = "move";
+        piece = e.target;
+        dragging = true;
+      });
+
+      board.addEventListener("dragend", (e) => {
+        console.log("dragend", e);
+        // if (isSpace(e.target)) return false
+      });
+
+      board.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        console.log("dragover", e);
+        // if (isSpace(e.target)) return false
+      });
+
+      board.addEventListener("dragenter", (e) => {
+        console.log("dragenter", e);
+        // highlight potential drop target when the draggable element enters it
+        // if (isSpace(event.target)) {
+        //     console.log('dragenter', e)
+        //     event.target.style.background = "purple";
+        // }
+      });
+
+      board.addEventListener("dragleave", (e) => {
+        console.log("dragleave", e);
+        // reset background of potential drop target when the draggable element leaves it
+        // if (isSpace(event.target)) {
+        // event.target.style.background = "";
+        // }
+      });
+
+      board.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dragging = false;
+        const from = dataToCoords(piece.dataset.from);
+        const to = dataToCoords(e.target.dataset.to);
+
+        STATE = move(STATE, from, to);
+        renderBoard(STATE);
+        //   if (isSpace(e.target) && !isRow2(e.target)) {
+        //     // event.target.style.background = "";
+        //     piece.parentNode.removeChild(piece);
+        //     event.target.appendChild(piece);
+        //     piece = null;
+        //     return true;
+        //   }
+
+        //   return false;
+        // });
+      });
     </script>
   </body>
 </html>
+
+<!--
+  0  1  2  3  4  5  6  7
+  8  9  10 11 12 13 14 15
+  16 17 18 19 20 21 22 23
+-->
