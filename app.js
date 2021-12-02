@@ -6,12 +6,11 @@ import { getContentType } from "./lib/index.js";
 
 const PORT = 8080;
 const resource = /jpg|png|gif|js|css$/;
-const isApi = (str) => /^\/?api/.test(str);
 
 const server = http.createServer(async (req, res) => {
-  if (resource.test(req.url)) {
-    const file = path.resolve(`./public${req.url}`);
+  const file = path.resolve(`./public${req.url}`);
 
+  if (resource.test(file)) {
     fs.open(file, (err) => {
       if (err === null) {
         res.writeHead(200, {
@@ -23,8 +22,6 @@ const server = http.createServer(async (req, res) => {
         res.end();
       }
     });
-  } else if (isApi(req.url)) {
-    console.log("this is api", req.url);
   } else {
     res.writeHead(200, { "Content-Type": "text/html" });
     fs.createReadStream(path.resolve("./public/index.html"), "utf-8").pipe(res);
@@ -33,3 +30,15 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, "127.0.0.1");
 console.log("Server listening to ", PORT);
+
+// else if (/game\/[a-zA-Z0-9]{5,5}/.test(req.url)) {
+//     const gameId = req.url.slice(-5);
+
+//     if (hasGame(gameId)) {
+//       res.writeHead(200, { "Content-Type": "application/json" });
+//       res.end(JSON.stringify({ game: "g" }));
+//     } else {
+//       res.writeHead(404);
+//       res.end();
+//     }
+//   }
