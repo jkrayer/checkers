@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start:dev": "nodemon index.js",
-    "start": "node index.js",
+    "start:dev": "nodemon app.js",
+    "start": "node app.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "repository": {
