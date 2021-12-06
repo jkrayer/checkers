@@ -1,9 +1,11 @@
 import { move, initialState } from "/scripts/checkers.js";
+import { toast } from "/scripts/Toast.js";
 
-const sixtyFPS = 1000 / 30; // 60
-let STATE = initialState();
+const localToast = toast({ time: 2500 });
+
 const dataToCoords = (str) => str.split(",").map((x) => parseInt(x, 10));
 
+// RENDER
 const renderPiece = (p, x, y) => {
   // `<div draggable class="piece ${p}"></div>`
   const d = document.createElement("DIV");
@@ -15,7 +17,7 @@ const renderPiece = (p, x, y) => {
 };
 
 // State -> Board
-function renderBoard({ board: sboard }) {
+const renderBoard = ({ board: sboard }) => {
   Array.from(board.getElementsByClassName("piece")).forEach((element) => {
     element.remove();
   });
@@ -26,73 +28,100 @@ function renderBoard({ board: sboard }) {
         : false;
     });
   });
-}
-
-const step = (t1) => (t2) => {
-  if (!dragging && t2 - t1 > sixtyFPS) {
-    console.log("60fps");
-    // state = next(state);
-    renderBoard(STATE);
-    window.requestAnimationFrame(step(t2));
-  } else {
-    window.requestAnimationFrame(step(t1));
-  }
 };
 
-renderBoard(STATE);
-// window.requestAnimationFrame(step(0));
+// STATE :: let STATE = initialState();
+const STATE = (function (initialState, callback) {
+  let state = initialState;
 
-board.addEventListener("dragstart", (e) => {
-  console.log("dragstart", e);
-  e.dataTransfer.effectAllowed = "move";
-  piece = e.target;
-  dragging = true;
-});
+  localToast(`New Game. ${state.turn} starts.`);
+  callback(state);
 
-board.addEventListener("dragend", (e) => {
-  console.log("dragend", e);
-  // if (isSpace(e.target)) return false
-});
+  const pushState = (nextState) => {
+    const { error, turn, winner } = nextState;
 
-board.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  console.log("dragover", e);
-  // if (isSpace(e.target)) return false
-});
+    if (winner) {
+      localToast(winner);
+      // and probably more
+    } else if (error) {
+      localToast(error);
+    } else if (state.turn !== turn) {
+      localToast(`${turn} goes!`);
+    }
 
-board.addEventListener("dragenter", (e) => {
-  console.log("dragenter", e);
-  // highlight potential drop target when the draggable element enters it
-  // if (isSpace(event.target)) {
-  //     console.log('dragenter', e)
-  //     event.target.style.background = "purple";
-  // }
-});
+    state = nextState;
+    callback(state);
+  };
 
-board.addEventListener("dragleave", (e) => {
-  console.log("dragleave", e);
-  // reset background of potential drop target when the draggable element leaves it
-  // if (isSpace(event.target)) {
-  // event.target.style.background = "";
-  // }
-});
+  return {
+    pushState,
+    getState: () => state,
+  };
+})(initialState(), renderBoard);
 
-board.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dragging = false;
-  const from = dataToCoords(piece.dataset.from);
-  const to = dataToCoords(e.target.dataset.to);
+// EVENT LISTENERS
+const addEventListeners = (board) => {
+  //*** */
+  const dragStart = (e) => {
+    console.log("dragstart", e);
+    e.dataTransfer.effectAllowed = "move";
+    piece = e.target;
+    dragging = true;
+  };
 
-  STATE = move(STATE, from, to);
-  renderBoard(STATE);
-  //   if (isSpace(e.target) && !isRow2(e.target)) {
-  //     // event.target.style.background = "";
-  //     piece.parentNode.removeChild(piece);
-  //     event.target.appendChild(piece);
-  //     piece = null;
-  //     return true;
-  //   }
+  board.addEventListener("dragstart", dragStart);
 
-  //   return false;
-  // });
-});
+  board.addEventListener("dragend", (e) => {
+    console.log("dragend", e);
+    // if (isSpace(e.target)) return false
+  });
+
+  board.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    console.log("dragover", e);
+    // if (isSpace(e.target)) return false
+  });
+
+  board.addEventListener("dragenter", (e) => {
+    console.log("dragenter", e);
+    // highlight potential drop target when the draggable element enters it
+    // if (isSpace(event.target)) {
+    //     console.log('dragenter', e)
+    //     event.target.style.background = "purple";
+    // }
+  });
+
+  board.addEventListener("dragleave", (e) => {
+    console.log("dragleave", e);
+    // reset background of potential drop target when the draggable element leaves it
+    // if (isSpace(event.target)) {
+    // event.target.style.background = "";
+    // }
+  });
+
+  board.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dragging = false;
+    const from = dataToCoords(piece.dataset.from);
+    const to = dataToCoords(e.target.dataset.to);
+
+    // console.log(108, move(STATE, from, to));
+    STATE.pushState(move(STATE.getState(), from, to));
+
+    // renderBoard(STATE);
+    // if (isSpace(e.target) && !isRow2(e.target)) {
+    //   // event.target.style.background = "";
+    //   piece.parentNode.removeChild(piece);
+    //   event.target.appendChild(piece);
+    //   piece = null;
+    //   return true;
+    // }
+    // return false;
+  });
+
+  // return () => console.log("remove Event Listeners");
+};
+
+(function init() {
+  addEventListeners(document.getElementById("board"));
+})();

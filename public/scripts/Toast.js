@@ -55,7 +55,7 @@ class Toast {
   }
 }
 
-const toast = (options) => {
+export const toast = (options) => {
   const opts = { ...options, el: document.body, time: 2000 };
   return (message) => new Toast(message, opts).render();
 };

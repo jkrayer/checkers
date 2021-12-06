@@ -86,9 +86,17 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
 }
-.P1 {
+.P1,
+.K1 {
   background-color: #111;
 }
-.P2 {
+.P2,
+.K2 {
   background-color: bisque;
+}
+.K1 {
+  background-color: darkblue;
+}
+.K2 {
+  background-color: darkcyan;
 }
