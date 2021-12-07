@@ -1,7 +1,8 @@
 import { move, initialState } from "/scripts/checkers.js";
 import { toast } from "/scripts/Toast.js";
 
-const localToast = toast({ time: 2500 });
+// Longer messages
+const localToast = toast({ time: 3500 });
 
 const dataToCoords = (str) => str.split(",").map((x) => parseInt(x, 10));
 

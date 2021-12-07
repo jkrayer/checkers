@@ -15,6 +15,10 @@ class Toast {
     return (this.div.getBoundingClientRect().width || 0) / 2;
   }
 
+  _halfHeight() {
+    return (this.div.getBoundingClientRect().height || 0) / 2;
+  }
+
   _markUp() {
     this.div = document.createElement("DIV");
     this.button = document.createElement("BUTTON");
@@ -27,7 +31,10 @@ class Toast {
     this.div.appendChild(this.button);
 
     this.parent.appendChild(this.div);
-    this.div.setAttribute("style", `left: calc(50% - ${this._halfWidth()}px)`);
+    this.div.setAttribute(
+      "style",
+      `transform: translate3d(-${this._halfWidth()}px, -${this._halfHeight()}px, 0);`
+    );
     setTimeout(() => this.div.classList.add("show"), 0);
   }
 
@@ -36,7 +43,7 @@ class Toast {
       "click",
       () => {
         this.div.classList.add("hide");
-        setTimeout(() => this.div.remove(), 200);
+        setTimeout(() => this.div.remove(), 300);
       },
       {
         once: true,
@@ -45,7 +52,7 @@ class Toast {
 
     setTimeout(
       () => this.button.dispatchEvent(new MouseEvent("click")),
-      this.time
+      this.time + 250
     );
   }
 
