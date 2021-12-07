@@ -6,6 +6,12 @@ const localToast = toast({ time: 3500 });
 
 const dataToCoords = (str) => str.split(",").map((x) => parseInt(x, 10));
 
+//
+function getPosition(x, y) {
+  const pos = (n) => n * 8 + 0.5;
+  return `left:${pos(x)}vh; top:${pos(y)}vh;`;
+}
+
 // RENDER
 const renderPiece = (p, x, y) => {
   // `<div draggable class="piece ${p}"></div>`
