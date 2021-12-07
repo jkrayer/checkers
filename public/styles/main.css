@@ -1,0 +1,103 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+#board-wrapper {
+  width: fit-content;
+  height: fit-content;
+  box-shadow: 0 0 20px 0 black;
+}
+#board {
+  position: relative;
+  width: 64vh;
+  height: 64vh;
+  background-color: bisque;
+  border: 5px solid bisque;
+  outline: 5px solid brown;
+  box-shadow: 0 0 0 10px bisque;
+}
+.space {
+  position: absolute;
+  box-sizing: border-box;
+  width: 8vh;
+  height: 8vh;
+  background-color: brown;
+}
+.row-1 {
+  top: 0;
+}
+.row-2 {
+  top: 8vh;
+}
+.row-3 {
+  top: 16vh;
+}
+.row-4 {
+  top: 24vh;
+}
+.row-5 {
+  top: 32vh;
+}
+.row-6 {
+  top: 40vh;
+}
+.row-7 {
+  top: 48vh;
+}
+.row-8 {
+  top: 56vh;
+}
+.col-1 {
+  left: 0;
+}
+.col-2 {
+  left: 8vh;
+}
+.col-3 {
+  left: 16vh;
+}
+.col-4 {
+  left: 24vh;
+}
+.col-5 {
+  left: 32vh;
+}
+.col-6 {
+  left: 40vh;
+}
+.col-7 {
+  left: 48vh;
+}
+.col-8 {
+  left: 56vh;
+}
+.piece {
+  position: absolute;
+  z-index: 1;
+  width: 7vh;
+  height: 7vh;
+  border-radius: 50%;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
+}
+.P1,
+.K1 {
+  background-color: #111;
+}
+.P2,
+.K2 {
+  background-color: bisque;
+}
+.K1 {
+  background-color: darkblue;
+}
+.K2 {
+  background-color: darkcyan;
+}
